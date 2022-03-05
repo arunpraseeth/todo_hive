@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive_project/View/Profile/profile.dart';
 
 // ignore: must_be_immutable
@@ -6,7 +8,10 @@ class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
   final _key = GlobalKey<FormState>();
-  TextEditingController textController = TextEditingController();
+  Box<String> todoList = Hive.box<String>("todo");
+  TextEditingController subjectController = TextEditingController();
+  TextEditingController bodyController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -32,15 +37,36 @@ class HomePage extends StatelessWidget {
           SizedBox(height: size.height * 0.03),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  width: size.width * 0.7,
-                  child: Form(
-                    key: _key,
+            child: Form(
+              key: _key,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    width: size.width * 0.2,
                     child: TextFormField(
-                      controller: textController,
+                      controller: subjectController,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Empty';
+                        }
+                      },
+                      style: const TextStyle(
+                        fontSize: 20,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: "Subject",
+                        hintStyle: TextStyle(fontSize: 16),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 10.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: size.width * 0.5,
+                    child: TextFormField(
+                      controller: bodyController,
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'The field is empty';
@@ -50,38 +76,125 @@ class HomePage extends StatelessWidget {
                         fontSize: 20,
                       ),
                       decoration: const InputDecoration(
+                        hintText: "Enter your task",
+                        hintStyle: TextStyle(fontSize: 16),
                         contentPadding: EdgeInsets.symmetric(
                           vertical: 10.0,
-                          horizontal: 15.0,
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 15),
-                IconButton(
-                  onPressed: () {
-                    if (_key.currentState!.validate()) {
-                      print(textController.text);
-                    }
-                  },
-                  icon: const Icon(
-                    Icons.done,
-                    size: 30,
-                    color: Colors.green,
+                  const SizedBox(width: 15),
+                  IconButton(
+                    onPressed: () {
+                      if (_key.currentState!.validate()) {
+                        todoList.put(
+                          subjectController.text.trim(),
+                          bodyController.text.trim(),
+                        );
+                        subjectController.clear();
+                        bodyController.clear();
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.done,
+                      size: 30,
+                      color: Colors.green,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          SizedBox(height: size.height * 0.08),
+          SizedBox(height: size.height * 0.05),
           const Padding(
-            padding:  EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.symmetric(horizontal: 10),
             child: Divider(thickness: 1),
           ),
-          SizedBox(height: size.height * 0.1),
+          SizedBox(height: size.height * 0.009),
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: todoList.listenable(),
+              builder: (context, Box<String> todolist, child) {
+                return ListView.separated(
+                  itemCount: todolist.keys.toList().length,
+                  separatorBuilder: (context, index) => Container(),
+                  itemBuilder: (context, index) {
+                    final key = todoList.keys.toList()[index];
+                    final value = todoList.get(key);
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      child: Card(
+                        child: ListTile(
+                          title: Text(
+                            "$key",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "$value",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.black,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            onPressed: () {
+                              showAlertDialog(context, index: index);
+                            },
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Future showAlertDialog(BuildContext context, {required int index}) async {
+    Widget cancelButton = TextButton(
+      child: const Text("Cancel"),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+    Widget logoutButton = TextButton(
+      child: const Text(
+        "Delete",
+        style: TextStyle(
+          color: Colors.red,
+        ),
+      ),
+      onPressed: () async {
+        todoList.deleteAt(index);
+        Navigator.pop(context);
+      },
+    );
+
+    AlertDialog alert = AlertDialog(
+      content: const Text("Are you sure to delete?"),
+      actions: [
+        cancelButton,
+        logoutButton,
+      ],
+    );
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
     );
   }
 }

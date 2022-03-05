@@ -1,11 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:hive_project/Controller/obscure_controller.dart';
 import 'package:hive_project/View/Home/home_page.dart';
 import 'package:hive_project/View/Login/enter_number.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Directory document = await getApplicationDocumentsDirectory();
+  Hive.init(document.path);
+  await Hive.openBox<String>("todo");
   runApp(const MyApp());
 }
 
@@ -35,7 +43,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) =>ObscureController()),
+        ChangeNotifierProvider(create: (context) => ObscureController()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

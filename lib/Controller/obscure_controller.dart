@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ObscureController with ChangeNotifier {
-  bool _obscure = false;
+  bool _obscure = true;
   visibity({required bool obscure}) {
     _obscure = obscure;
     notifyListeners();
