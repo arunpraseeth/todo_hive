@@ -76,25 +76,24 @@ class EnterOTPPage extends StatelessWidget {
             ),
             SizedBox(height: size.height * 0.06),
             CustomNavigatorButton.customButton(
-              context: context,
-              size: size,
-              boxName: "Verify",
-              onTap: () async {
-                if (_key.currentState!.validate()) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => HomePage(),
-                    ),
-                    (route) => false,
-                  );
-                  SharedPreferences sharedPreferences =
-                      await SharedPreferences.getInstance();
-                  await sharedPreferences.setString(
-                      "otp", otpController.text.trim());
-                }
-              },
-            ),
+                context: context,
+                size: size,
+                boxName: "Verify",
+                onTap: () async {
+                  if (_key.currentState!.validate()) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HomePage(),
+                      ),
+                      (route) => false,
+                    );
+                    SharedPreferences sharedPreferences =
+                        await SharedPreferences.getInstance();
+                    await sharedPreferences.setString(
+                        "otp", otpController.text.trim());
+                  }
+                }),
           ],
         ),
       ),
