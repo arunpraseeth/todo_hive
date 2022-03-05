@@ -118,8 +118,8 @@ class HomePage extends StatelessWidget {
               builder: (context, Box<String> todolist, child) {
                 return ListView.separated(
                   itemCount: todolist.keys.toList().length,
-                  separatorBuilder: (context, index) => Container(),
-                  itemBuilder: (context, index) {
+                  separatorBuilder: (separatorContext, index) => Container(),
+                  itemBuilder: (itemBuilderContext, index) {
                     final key = todoList.keys.toList()[index];
                     final value = todoList.get(key);
                     return Padding(
